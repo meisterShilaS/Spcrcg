@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
         final SpeechRecognizer recognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
-        final Context context = this;
+        if(SpeechRecognizer.isRecognitionAvailable(this)) writeText("Speech Recognizer is Available.");
+        else writeText("Speech Recognizer is Unavailable.");
 
         recognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -68,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
             public void onEndOfSpeech() {
                 writeText("onEndOfSpeech");
             }
-
-            // https://qiita.com/CST_negi/items/aac8337b4748a658473f
 
             @Override
             public void onError(int error) {
@@ -137,21 +136,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button button = (Button)findViewById(R.id.button2);
-        button.setOnClickListener(new View.OnClickListener(){
+        final Button start = (Button)findViewById(R.id.start);
+        start.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                if(v == button){
-                    recognizer.startListening(intent);
-                }
+                recognizer.startListening(intent);
             }
         });
 
-        final Button stopButton = (Button)findViewById(R.id.button);
-        stopButton.setOnClickListener(new View.OnClickListener(){
+        final Button stop = (Button)findViewById(R.id.stop);
+        stop.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                if(v == stopButton){
-                    recognizer.stopListening();
-                }
+                recognizer.stopListening();
             }
         });
     }
