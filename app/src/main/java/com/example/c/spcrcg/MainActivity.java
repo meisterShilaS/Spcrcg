@@ -8,6 +8,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,17 +20,24 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private final static String LOGTAG = MainActivity.class.getSimpleName();
+    private TextView text;
+
+    private void writeText(String s){
+        text.setText(text.getText() + "\n" + s);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final TextView text = (TextView)findViewById(R.id.textView);
+        text = (TextView)findViewById(R.id.textView);
+        text.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
         final SpeechRecognizer recognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
@@ -38,12 +46,12 @@ public class MainActivity extends AppCompatActivity {
         recognizer.setRecognitionListener(new RecognitionListener() {
             @Override
             public void onReadyForSpeech(Bundle params) {
-                Toast.makeText(context, "onReadyForSpeech", Toast.LENGTH_SHORT).show();
+                writeText("onReadyForSpeech");
             }
 
             @Override
             public void onBeginningOfSpeech() {
-                Toast.makeText(context, "onBeginningOfSpeech", Toast.LENGTH_SHORT).show();
+                writeText("onBeginningOfSpeech");
             }
 
             @Override
@@ -58,41 +66,43 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onEndOfSpeech() {
-                Toast.makeText(context, "onEndOfSpeech", Toast.LENGTH_SHORT).show();
+                writeText("onEndOfSpeech");
             }
+
+            // https://qiita.com/CST_negi/items/aac8337b4748a658473f
 
             @Override
             public void onError(int error) {
                 switch(error) {
                     case SpeechRecognizer.ERROR_AUDIO:
-                        Toast.makeText(context, "ERROR_AUDIO", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_AUDIO");
                         break;
                     case SpeechRecognizer.ERROR_CLIENT:
-                        Toast.makeText(context, "ERROR_CLIENT", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_CLIENT");
                         break;
                     case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                        Toast.makeText(context, "ERROR_INSUFFICIENT_PERMISSIONS", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_INSUFFICIENT_PERMISSIONS");
                         break;
                     case SpeechRecognizer.ERROR_NETWORK:
-                        Toast.makeText(context, "ERROR_NETWORK", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_NETWORK");
                         break;
                     case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                        Toast.makeText(context, "ERROR_NETWORK_TIMEOUT", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_NETWORK_TIMEOUT");
                         break;
                     case SpeechRecognizer.ERROR_NO_MATCH:
-                        Toast.makeText(context, "ERROR_NO_MATCH", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_NO_MATCH");
                         break;
                     case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                        Toast.makeText(context, "ERROR_RECOGNIZER_BUSY", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_RECOGNIZER_BUSY");
                         break;
                     case SpeechRecognizer.ERROR_SERVER:
-                        Toast.makeText(context, "ERROR_SERVER", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_SERVER");
                         break;
                     case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                        Toast.makeText(context, "ERROR_SPEECH_TIMEOUT", Toast.LENGTH_LONG).show();
+                        writeText("ERROR_SPEECH_TIMEOUT");
                         break;
                     default:
-                        Toast.makeText(context, "unknown error", Toast.LENGTH_LONG).show();
+                        writeText("unknown error");
                         break;
                 }
             }
@@ -101,12 +111,12 @@ public class MainActivity extends AppCompatActivity {
             public void onResults(Bundle results) {
                 List<String> recData = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-                String getData = new String();
+                String getData = "Results: ";
                 for(Iterator<String> it = recData.iterator(); it.hasNext(); ){
                     getData += it.next();
                     if(it.hasNext()) getData += ", ";
                 }
-                text.setText(text.getText() + "\n" + getData);
+                writeText(getData);
             }
 
             @Override
@@ -118,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                     getData += it.next();
                     if(it.hasNext()) getData += ", ";
                 }
-                text.setText(text.getText() + "\n" + getData);
+                writeText(getData);
             }
 
             @Override
@@ -127,11 +137,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button button = (Button)findViewById(R.id.button);
+        final Button button = (Button)findViewById(R.id.button2);
         button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 if(v == button){
                     recognizer.startListening(intent);
+                }
+            }
+        });
+
+        final Button stopButton = (Button)findViewById(R.id.button);
+        stopButton.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                if(v == stopButton){
+                    recognizer.stopListening();
                 }
             }
         });
